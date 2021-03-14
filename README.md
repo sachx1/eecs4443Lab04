@@ -3,7 +3,7 @@ Lab 04 may not work on newer devices, try an older device thats running Android 
 <h2> TO DO LIST </h2> <br /> <br />
 <ol>
   <li>Sound for when ball completes a Lap</li>
-  <li>wall hits are only triggered inside path</li>
+  <li>wall hits need to be triggered inside path, so far only works for inner wall.</li>
   <li>getting the textview to show laps, wallhits, average time and how long ball was in the path for</li>
   <li>add arrow to indicate what direction the ball is going</li>
 </ol> 
