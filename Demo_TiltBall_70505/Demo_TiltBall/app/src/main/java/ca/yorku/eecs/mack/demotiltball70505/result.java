@@ -26,6 +26,7 @@ public class result extends Activity {
         totalLaps = rb.lapNumber;
         Log.i(MYDEBUG, "laps are " + totalLaps);
         wallHits = rb.wallHits;
+
         lapText = (TextView)findViewById(R.id.lapDisplay);
         lapText.setText(String.format(Locale.CANADA, "Laps: %d" + totalLaps));
 
