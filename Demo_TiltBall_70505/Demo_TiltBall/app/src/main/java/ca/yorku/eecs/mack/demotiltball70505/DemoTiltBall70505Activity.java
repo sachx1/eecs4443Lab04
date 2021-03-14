@@ -13,6 +13,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 /**
  * Demo_Android - with modifications by...
@@ -137,6 +138,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
             Log.i(MYDEBUG, "Can't run demo.  Requires Orientation sensor or Accelerometer");
             this.finish();
         }
+
 
         // NOTE: sensor listeners are registered in onResume
 
@@ -320,7 +322,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
             int laps = rb.lapNumber;             //GET CURRENT LAP AND TOTAL LAPS TO COMPARE
             int curLaps = rb.currentLapNumber;
             //int wallHits = rb.wallHits;
-           if (curLaps > laps){                   //COMPARES THE TOTAL # OF LAPS, IF CURRENT LAP IS GREATER THAN TOTAL GO TO THE END SCREEN
+           if (curLaps > laps){ //COMPARES THE TOTAL # OF LAPS, IF CURRENT LAP IS GREATER THAN TOTAL GO TO THE END SCREEN
                setContentView(R.layout.endingscreen);       //LOADS IN ENDSCREEN
            }
             //Log.i(MYDEBUG, "Total Laps " + laps + "Total wall hits " + wallHits);

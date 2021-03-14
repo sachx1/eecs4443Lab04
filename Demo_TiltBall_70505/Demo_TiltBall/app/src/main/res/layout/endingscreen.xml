@@ -4,11 +4,11 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/laps"
+        android:id="@+id/lapDisplay"
         android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Laps: "
+        android:text="lapDisplay"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
     <TextView

@@ -14,28 +14,32 @@ import java.util.Locale;
 
 public class result extends Activity {
 
-
-    //int lapNumber = super.lapNumber;
-    //int wallhits = super.wallHits;
     final static String MYDEBUG = "MYDEBUG";
     RollingBallPanel rb;
-    public TextView laps;
+    public TextView lapText;
     int totalLaps;
     int wallHits;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.endingscreen);
-        initialize();
-    }
-
-    public void initialize(){
         totalLaps = rb.lapNumber;
         Log.i(MYDEBUG, "laps are " + totalLaps);
         wallHits = rb.wallHits;
-        laps = (TextView) findViewById(R.id.laps);
-        //laps.setText(totalLaps);
-        laps.setText(String.format(Locale.CANADA, "Laps: %d" + totalLaps));
+        lapText = (TextView)findViewById(R.id.lapDisplay);
+        lapText.setText(String.format(Locale.CANADA, "Laps: %d" + totalLaps));
+
+        //initialize();
+    }
+
+    public void initialize(){
+//        totalLaps = rb.lapNumber;
+//        Log.i(MYDEBUG, "laps are " + totalLaps);
+//        wallHits = rb.wallHits;
+//        lapText = (TextView)findViewById(R.id.lapDisplay);
+//        //laps.setText(totalLaps);
+//        //laps.setText(String.format(Locale.CANADA, "Laps: %d" + totalLaps));
+//        lapText.setText("Snakes " + totalLaps);
 
         TextView wall = (TextView) findViewById(R.id.wallhits);
         wall.setText(wallHits);

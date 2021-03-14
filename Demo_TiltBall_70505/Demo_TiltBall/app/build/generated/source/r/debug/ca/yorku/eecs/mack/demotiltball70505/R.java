@@ -18,20 +18,21 @@ public final class R {
   public static final class id {
     public static final int Button01=0x7f030000;
     public static final int Button03=0x7f030001;
-    public static final int laps=0x7f030002;
-    public static final int lapsParam=0x7f030003;
-    public static final int paramGain=0x7f030004;
-    public static final int paramLabelGain=0x7f030005;
-    public static final int paramLabelOrderOfControl=0x7f030006;
-    public static final int paramLabelPathType=0x7f030007;
-    public static final int paramLabelPathWidth=0x7f030008;
-    public static final int paramOrderOfControl=0x7f030009;
-    public static final int paramPathType=0x7f03000a;
-    public static final int paramPathWidth=0x7f03000b;
-    public static final int rollingballpanel=0x7f03000c;
-    public static final int setupTitle=0x7f03000d;
-    public static final int spinnerstyle=0x7f03000e;
-    public static final int wallhits=0x7f03000f;
+    public static final int lapDisplay=0x7f030002;
+    public static final int laps=0x7f030003;
+    public static final int lapsParam=0x7f030004;
+    public static final int paramGain=0x7f030005;
+    public static final int paramLabelGain=0x7f030006;
+    public static final int paramLabelOrderOfControl=0x7f030007;
+    public static final int paramLabelPathType=0x7f030008;
+    public static final int paramLabelPathWidth=0x7f030009;
+    public static final int paramOrderOfControl=0x7f03000a;
+    public static final int paramPathType=0x7f03000b;
+    public static final int paramPathWidth=0x7f03000c;
+    public static final int rollingballpanel=0x7f03000d;
+    public static final int setupTitle=0x7f03000e;
+    public static final int spinnerstyle=0x7f03000f;
+    public static final int wallhits=0x7f030010;
   }
   public static final class layout {
     public static final int activity_ending=0x7f040000;
