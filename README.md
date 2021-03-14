@@ -1,4 +1,4 @@
-Lab 04 <br />
+<h1> LAB 04 </h1> <br />
 Lab 04 may not work on newer devices, try an older device thats running Android 6 or less <br />
 TO DO LIST <br />
 1. Sound for when ball completes a Lap
