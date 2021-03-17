@@ -1,12 +1,12 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
-INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-30:12
+ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
+INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:2:1-36:12
 	package
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:3:5-51
 		INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml
@@ -26,7 +26,7 @@ ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltB
 	android:name
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:7:22-63
 application
-ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:9:5-28:19
+ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:9:5-34:19
 	android:label
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:12:9-41
 	android:icon
@@ -56,13 +56,19 @@ ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltB
 	android:name
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:21:27-74
 activity#ca.yorku.eecs.mack.demotiltball70505.DemoTiltBall70505Activity
-ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:24:9-27:83
+ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:24:9-29:20
 	android:label
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:26:13-45
 	android:theme
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:27:13-71
 	android:name
 		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:25:13-54
+activity#ca.yorku.eecs.mack.demotiltball70505.Results
+ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:30:9-33:20
+	android:label
+		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:32:13-45
+	android:name
+		ADDED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml:31:13-72
 uses-sdk
 INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\sachx\Documents\eecs4443Lab04\Demo_TiltBall_70505\Demo_TiltBall\app\src\main\AndroidManifest.xml

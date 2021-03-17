@@ -13,7 +13,6 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 /**
  * Demo_Android - with modifications by...
@@ -52,18 +51,14 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
     float alpha;
 
     RollingBallPanel rb;
-    //result rs;
     int sensorMode;
     float[] accValues = new float[3];
     float[] magValues = new float[3];
     float x, y, z, pitch, roll;
-
-    // parameters from the Setup dialog
     String orderOfControl, pathType, pathWidth;
-    int gain, lapNumber;
-    int swap;
-
+    int gain;
     int defaultOrientation;
+    int numberLaps;         //LAP VARIABLE SENT FROM SETUP
     ScreenRefreshTimer refreshScreen;
     private SensorManager sm;
     private Sensor sA, sM, sO;
@@ -80,10 +75,8 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
         gain = b.getInt("gain");
         pathType = b.getString("pathType");
         pathWidth = b.getString("pathWidth");
-        lapNumber = b.getInt("lapNumber"); //GETS THE LAPNUMBER SENT FROM SETUP
+        numberLaps = b.getInt("laps");
 
-
-        //swap = s.getInt("sw");
 
         // set alpha for low-pass filter (based on sampling rate and order of control)
         if (orderOfControl.equals("Velocity")) // velocity control
@@ -103,14 +96,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
 
         // configure rolling ball panel, as per setup parameters
         rb = (RollingBallPanel)findViewById(R.id.rollingballpanel);
-        rb.configure(pathType, pathWidth, gain, orderOfControl, lapNumber); //PASSES VARIABLES TO ROLLING BALL METHOD public void configure
-
-        //if(swap == 1){
-          //  Log.i(MYDEBUG, "SWAPPINGGGGGGGGGGGGGGG");
-            //rs = (result)findViewById(R.id.result);
-            //rs.passThrough(totalLaps, wallHits);
-            //setContentView(R.layout.endingscreen);
-        //}
+        rb.configure(pathType, pathWidth, gain, orderOfControl, numberLaps);
 
         // get sensors
         sm = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -138,7 +124,6 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
             Log.i(MYDEBUG, "Can't run demo.  Requires Orientation sensor or Accelerometer");
             this.finish();
         }
-
 
         // NOTE: sensor listeners are registered in onResume
 
@@ -247,13 +232,13 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
             // ---------------------------------------------------------------------------------------------
             case ACCELEROMETER_ONLY:
 
-				/*
+                /*
                  * Use this mode if the device has an accelerometer but no magnetic field sensor and
-				 * no orientation sensor (e.g., HTC Desire C, Asus MeMOPad). This algorithm doesn't
-				 * work quite as well, unfortunately. See...
-				 * 
-				 * http://www.hobbytronics.co.uk/accelerometer-info
-				 */
+                 * no orientation sensor (e.g., HTC Desire C, Asus MeMOPad). This algorithm doesn't
+                 * work quite as well, unfortunately. See...
+                 *
+                 * http://www.hobbytronics.co.uk/accelerometer-info
+                 */
 
                 // smooth the sensor values using a low-pass filter
                 if (se.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
@@ -272,9 +257,9 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
      * Low pass filter. The algorithm requires tracking only two numbers - the prior number and the
      * new number. There is a time constant "alpha" which determines the amount of smoothing. Alpha
      * is like a "weight" or "momentum". It determines the effect of the new value on the current
-     * smoothed value. A lower alpha means more smoothing.
+     * smoothed value.
      *
-     * NOTE: 0 <= alpha <= 1.
+     * A lower alpha means more smoothing. NOTE: 0 <= alpha <= 1.
      *
      * See...
      *
@@ -290,7 +275,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
     /*
      * Screen updates are initiated in onFinish which executes every REFRESH_INTERVAL milliseconds
      */
-    private class ScreenRefreshTimer extends CountDownTimer
+    public class ScreenRefreshTimer extends CountDownTimer
     {
         ScreenRefreshTimer(long millisInFuture, long countDownInterval)
         {
@@ -318,14 +303,6 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
                 tiltAngle = tiltAngle + 180f;
 
             rb.updateBallPosition(pitch, roll, tiltAngle, tiltMagnitude); // will invalidate ball panel
-
-            int laps = rb.lapNumber;             //GET CURRENT LAP AND TOTAL LAPS TO COMPARE
-            int curLaps = rb.currentLapNumber;
-            //int wallHits = rb.wallHits;
-           if (curLaps > laps){ //COMPARES THE TOTAL # OF LAPS, IF CURRENT LAP IS GREATER THAN TOTAL GO TO THE END SCREEN
-               setContentView(R.layout.endingscreen);       //LOADS IN ENDSCREEN
-           }
-            //Log.i(MYDEBUG, "Total Laps " + laps + "Total wall hits " + wallHits);
             this.start();
         }
     }

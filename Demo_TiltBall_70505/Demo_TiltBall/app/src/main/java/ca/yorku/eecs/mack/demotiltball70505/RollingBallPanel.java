@@ -9,6 +9,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.AttributeSet;
@@ -35,15 +37,12 @@ public class RollingBallPanel extends View
     final static int PATH_TYPE_SQUARE = 1;
     final static int PATH_TYPE_CIRCLE = 2;
 
-
-
     final static float PATH_WIDTH_NARROW = 2f; // ... x ball diameter
     final static float PATH_WIDTH_MEDIUM = 4f; // ... x ball diameter
     final static float PATH_WIDTH_WIDE = 8f; // ... x ball diameter
-    //private static final String TAG = "TAG";
-    final static String MYDEBUG = "MYDEBUG";  //FOR DEBUGGING
 
-    float radiusOuter, radiusInner, finishLineRadius;
+    int pathType;
+    float radiusOuter, radiusInner;
 
     Bitmap ball, decodedBallBitmap;
     int ballDiameter;
@@ -53,31 +52,46 @@ public class RollingBallPanel extends View
     float width, height, pixelDensity;
     int labelTextSize, statsTextSize, gap, offset;
 
-    RectF innerRectangle, outerRectangle, innerShadowRectangle, outerShadowRectangle, ballNow, finishLine;
+    float finishLineLeftX, finishLineLeftY, finishLineRightX, finishLineRightY;
+
+    /*ADDED DETECT INNER AND DETECT OUTER FOR CHECKING TO SEE IF
+     * THE BALL IS INSIDE THE PATH OR NOT, ADDED AN OVAL VARIABLE
+     * TO CHECK IF THE BALL IS IN THE BLUE CIRCLE OR NOT. BLUE CIRCLE
+     * IS THE STARTING POINT OF THE BALL */
+    RectF innerRectangle, outerRectangle, innerShadowRectangle, outerShadowRectangle, ballNow, detectionOuterRect, detectionInnerRect, startOval;
+
+    float pathWidth;
     boolean touchFlag;
-    boolean finishFlag;
     Vibrator vib;
+    ToneGenerator toneGenerator;
     int wallHits;
+    int laps, targetLaps; //TOTAL LAPS AND TARGET LAPS
+    boolean lapFlag;      //CHECKS TO SEE IF THE BALL HITS THE LINE
+    boolean isCheating = true; //CHECKING TO SEE IF THE PLAYER IS CHEATING
+    boolean startRace = false;  //CHECKS TO SEE IF THE RACE HAS STARTED
+    boolean hasLapOneStarted = false; //CHECKS TO SEE IF THE FIRST LAP HAS STARTED
+    boolean hasTimeStarted = false;  //CHECKS TO SEE IF THE TIME HAS STARTED
 
     float xBall, yBall; // top-left of the ball (for painting)
     float xBallCenter, yBallCenter; // center of the ball
 
+    double timeCounter; //DISPLAYS TIME IN REAL TIME
+    double startLapTime; //TIME FOR WHEN THE LAP STARTS
+    double startOvalDisplayTime, startInsideOvalDisplayTime; //SHOWS THE AMOUNT OF TIME DISPLAYED IN THE OVAL
+    double timeInsidePath, timeOutsidePath; //SHOWS TIME INSIDE AND OUTSIDE PATH, WORKS FOR RECT AND CIRCLE
+    double lapTime;  //FINAL LAP TIME THAT IS STORED
+    double[] lapTimes;  //AN ARRAY WHICH STORES THE LAP TIMES IF LAPS > 1
+
     float pitch, roll;
     float tiltAngle, tiltMagnitude;
-
-    // parameters from Setup dialog
     String orderOfControl;
-    float gain, pathWidth;
-    int pathType;
-    //Intent intent = getIntent();
-    int lapNumber;     //TOTAL LAPS
-    int currentLapNumber = 0; //CURRENT LAP THAT PLAYER IS ON
-
+    float gain;
     float velocity; // in pixels/second (velocity = tiltMagnitude * tiltVelocityGain
     float dBall; // the amount to move the ball (in pixels): dBall = dT * velocity
     float xCenter, yCenter; // the center of the screen
     long now, lastT;
-    Paint statsPaint, labelPaint, linePaint, fillPaint, backgroundPaint, finishLinePaint;
+    /*FINISH LINE AND STARTING CIRCLE PAINT VARIABLES*/
+    Paint statsPaint, labelPaint, linePaint, fillPaint, backgroundPaint, finishLinePaint, ballStartingPositionPaint;
     float[] updateY;
 
     public RollingBallPanel(Context contextArg)
@@ -101,6 +115,17 @@ public class RollingBallPanel extends View
     // things that can be initialized from within this View
     private void initialize(Context c)
     {
+        /*FINISH LINE COLOR AND SIZE SETUP*/
+        finishLinePaint = new Paint();
+        finishLinePaint.setColor(Color.RED);
+        finishLinePaint.setStyle(Paint.Style.STROKE);
+        finishLinePaint.setStrokeWidth(8);
+        finishLinePaint.setAntiAlias(true);
+
+        /*EXTRA UI FEATURE, ADDS A CHECKPOINT BALL TO START THE RACE*/
+        ballStartingPositionPaint = new Paint();
+        ballStartingPositionPaint.setColor(Color.GREEN);
+        ballStartingPositionPaint.setStyle(Paint.Style.FILL);
 
         linePaint = new Paint();
         linePaint.setColor(Color.RED);
@@ -112,15 +137,12 @@ public class RollingBallPanel extends View
         fillPaint.setColor(0xffccbbbb);
         fillPaint.setStyle(Paint.Style.FILL);
 
-        //FINISH LINE PAINT
-        finishLinePaint = new Paint();
-        finishLinePaint.setColor(0x0000FF);
-        finishLinePaint.setStyle(Paint.Style.FILL);
-
+        /*COLOR TO MAKE EXTRA UI FEATURE DISAPPEAR*/
         backgroundPaint = new Paint();
         backgroundPaint.setColor(Color.LTGRAY);
         backgroundPaint.setStyle(Paint.Style.FILL);
 
+        /*SETS COLOR FOR TITLE*/
         labelPaint = new Paint();
         labelPaint.setColor(Color.BLACK);
         labelPaint.setTextSize(DEFAULT_LABEL_TEXT_SIZE);
@@ -136,15 +158,23 @@ public class RollingBallPanel extends View
         lastT = System.nanoTime();
         this.setBackgroundColor(Color.LTGRAY);
         touchFlag = false;
+        lapFlag = false;  //INITIALIZE THE LAP BOOLEAN
         outerRectangle = new RectF();
         innerRectangle = new RectF();
-        finishLine = new RectF();   //SUPPOSED TO BE FINISH SQUARE
+        startOval = new RectF();    //INITIALIZE THE OVAL VARIABLE
         innerShadowRectangle = new RectF();
         outerShadowRectangle = new RectF();
+        detectionOuterRect = new RectF();   //INITIALIZES THE VARS NEEDED TO CHECK THE PATH
+        detectionInnerRect = new RectF();
         ballNow = new RectF();
         wallHits = 0;
+        laps = 0;      //STANDARD COUNTERS FOR LAPS
+        lapTime = 0;
+        timeCounter = System.currentTimeMillis();   //INITIALIZES THE TIME
+        startLapTime = timeCounter;     //SETS THE TIME TO THE START LAP TIME
 
         vib = (Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE);
+        toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);  //BEEP NOISE FOR LAPS
     }
 
     /**
@@ -179,9 +209,6 @@ public class RollingBallPanel extends View
         xBallCenter = xBall + ballDiameter / 2f;
         yBallCenter = yBall + ballDiameter / 2f;
 
-        // MOVED FINISH LINE INTO ONDRAW FUNCTION!
-
-
         // configure outer rectangle of the path
         radiusOuter = width < height ? 0.40f * width : 0.40f * height;
         outerRectangle.left = xCenter - radiusOuter;
@@ -197,6 +224,13 @@ public class RollingBallPanel extends View
         innerRectangle.right = xCenter + radiusInner;
         innerRectangle.bottom = yCenter + radiusInner;
 
+        // start oval that appears on the top right of the screen
+        // indicating where the ball should start
+        startOval.left = width - 300f;
+        startOval.top = 50f;                //diameter = 250
+        startOval.bottom = 300f;            //centerX = width - 175 centerY = 175
+        startOval.right = width - 50f;
+
         // configure outer shadow rectangle (needed to determine wall hits)
         // NOTE: line thickness (aka stroke width) is 2
         outerShadowRectangle.left = outerRectangle.left + ballDiameter - 2f;
@@ -210,6 +244,18 @@ public class RollingBallPanel extends View
         innerShadowRectangle.right = innerRectangle.right - ballDiameter + 2f;
         innerShadowRectangle.bottom = innerRectangle.bottom - ballDiameter + 2f;
 
+        /*CONFIGURE THE OUTER BORDER OF THE PATH */
+        detectionOuterRect.left = outerRectangle.left + ballDiameter / 2f;
+        detectionOuterRect.top = outerRectangle.top + ballDiameter / 2f;
+        detectionOuterRect.right = outerRectangle.right - ballDiameter / 2f;
+        detectionOuterRect.bottom = outerRectangle.bottom - ballDiameter / 2f;
+
+        /*CONFIGURE THE INNER BORDER OF THE PATH */
+        detectionInnerRect.left = innerRectangle.left + ballDiameter / 2f;
+        detectionInnerRect.top = innerRectangle.top + ballDiameter / 2f;
+        detectionInnerRect.right = innerRectangle.right - ballDiameter / 2f;
+        detectionInnerRect.bottom = innerRectangle.bottom - ballDiameter / 2f;
+
         // initialize a few things (e.g., paint and text size) that depend on the device's pixel density
         pixelDensity = this.getResources().getDisplayMetrics().density;
         labelTextSize = (int)(DEFAULT_LABEL_TEXT_SIZE * pixelDensity + 0.5f);
@@ -221,12 +267,12 @@ public class RollingBallPanel extends View
         gap = (int)(DEFAULT_GAP * pixelDensity + 0.5f);
         offset = (int)(DEFAULT_OFFSET * pixelDensity + 0.5f);
 
+        //ARRAY FOR LAP TIMES
+        lapTimes = new double[targetLaps];
         // compute y offsets for painting stats (bottom-left of display)
-        updateY = new float[6]; // up to 6 lines of stats will appear
+        updateY = new float[8]; // up to 6 lines of stats will appear
         for (int i = 0; i < updateY.length; ++i)
             updateY[i] = height - offset - i * (statsTextSize + gap);
-
-
     }
 
     /*
@@ -291,52 +337,131 @@ public class RollingBallPanel extends View
         xBallCenter = xBall + ballDiameter / 2f;
         yBallCenter = yBall + ballDiameter / 2f;
 
-        // if ball touches wall, vibrate and increment wallHits count
-        // NOTE: We also use a boolean touchFlag so we only vibrate on the first touch
-        if (ballTouchingLine() && !touchFlag)
-        {
-            touchFlag = true; // the ball has *just* touched the line: set the touchFlag
-            vib.vibrate(20); // 20 ms vibrotactile pulse
-            ++wallHits;
-            currentLapNumber = 1;
-            //++lapNumber;
-
-        } else if (!ballTouchingLine() && touchFlag)
-            touchFlag = false; // the ball is no longer touching the line: clear the touchFlag
-
-        if (ballTouchingFinish() && !finishFlag){  //IF BALL COLLIDES WITH FINISH SQUARE, INCREMENT THE LAP BY 1
-            finishFlag = true;
-            vib.vibrate(20);
-            ++currentLapNumber;
-        } else if (!ballTouchingFinish() && finishFlag){
-            finishFlag = false;
+        /*CHECKS TO SEE IF THE RACE HAS STARTED AND IF THE USER HAS USED THE CIRCLE TRIGGER
+         * IF THE USER HAS STOOD IN THE CIRCLE FOR MORE THAN 1 SECOND THEN THIS MAKES THE OVAL DISAPPEAR
+         * AND STARTS THE RACE, RACE TIMER AND A BEEP TO MARK THIS */
+        if (!startRace && startInsideOvalDisplayTime >= 1000) {
+            ballStartingPositionPaint.setColor(Color.LTGRAY);
+            invalidate();
+            startRace = true;
+            toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 500);
         }
 
+        /*CHECKS TO SEE IF THE RACE HAS NOT STARTED AND IF INSIDE CIRCLE IS TRUE
+         * IF THESE ARE SATISIFIED, IT CHECKS TO SEE IF THE TIMER IS NOT == TO 0,
+         * IF THIS IS TRUE THEN ADD TO THE CURRENT TIME - THE ORIGINAL START CIRCLE TIME*/
+        if (!startRace && checkIfBallWithinCircle()) {
+            if (startOvalDisplayTime != 0) {
+                startInsideOvalDisplayTime += System.currentTimeMillis() - startOvalDisplayTime;
+                startOvalDisplayTime = System.currentTimeMillis();
+            }
+            else {
+                startOvalDisplayTime = System.currentTimeMillis();
+            }
+        }
+        else if (!startRace && !checkIfBallWithinCircle()){
+            startInsideOvalDisplayTime = 0.0;
+            startOvalDisplayTime = 0.0;
+        }
+        else {
+            updateBallStats();
+        }
         invalidate(); // force onDraw to redraw the screen with the ball in its new position
+    }
+
+    public void updateBallStats() {
+        if (ballTouchingLine() && !isBallWithinBoundaries()) {
+            touchFlag = true;                               //we only want a vibrate when the ball goes from inside to outside
+        }
+        // if ball touches wall, vibrate and increment wallHits count
+        // NOTE: We also use a boolean touchFlag so we only vibrate on the first touch
+        //STARTS RECORDING IF FIRST LAP HAS STARTED
+        if (hasLapOneStarted) {
+            if (ballTouchingLine() && !touchFlag) {
+                touchFlag = true; // the ball has *just* touched the line: set the touchFlag
+                vib.vibrate(20); // 20 ms vibrotactile pulse
+                ++wallHits;
+
+            } else if (!ballTouchingLine() && touchFlag)
+                touchFlag = false; // the ball is no longer touching the line: clear the touchFlag
+
+            //CHECKS TO SEE IF TIMER HASNT STARTED
+            if (!hasTimeStarted) {
+                hasTimeStarted = true;
+                timeCounter = System.currentTimeMillis();
+            }
+
+            //CHECKS TO SEE IF THE BALL IS WITHIN THE PATH, IF SO THEN UPDATE THE TIMERS
+            if (isBallWithinBoundaries()) {
+                timeInsidePath = System.currentTimeMillis() - timeCounter - timeOutsidePath;
+            } else {
+                timeOutsidePath = System.currentTimeMillis() - timeCounter - timeInsidePath;
+            }
+            lapTime = System.currentTimeMillis() - startLapTime;
+
+            //CHECKS TO SEE IF THE PLAYER IS CHEATING OR NOT
+            isCheating = isCheating || ballCrossedHalfWayPoint();
+        }
+
+        /*ADD TO LAP COUNT EVERYTIME THE BALL CROSSES THE FINISH LINE IN THE CORRECT WAY
+         * THIS IS WHERE LAP FLAG COMES INTO PLAY, IF THIS VAR IS TRUE, IT MEANS THAT THE
+         * PLAYER HAS CROSSED THE FINISH LINE IN THE RIGHT DIRECTION */
+        if (finishLineCrossed() && !lapFlag) {
+            if (hasLapOneStarted) {
+
+                lapFlag = true;
+                toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
+                lapTimes[laps] = lapTime;
+                ++laps;
+                startLapTime = System.currentTimeMillis();
+
+                /*THIS IS WHERE THE MAIN TRANSITION HAPPENS, IF THE USER HAS REACHED THE TOTAL LAPS
+                 * THEN SWITCH TO THE RESULTS ACTIVITY AND SHOW THE CORRESPONDING RESULTS. METHOD IS TAKEN
+                 * STRAIGHT FROM THE SETUP JAVA CLASS. USED INTENT FLAGS SINCE THIS CLASS IS EXTENDING VIEW
+                 * NOT ACTIVITY, HENCE WE NEED TO GET THE CONTEXT, THEN USE THE CONTEXT FOR THE FLAGS,
+                 * THEN SWITCH TO THE ACTIVITY. THE FLAGS ALSO STOPPED CRASHING */
+                if (laps == targetLaps) {
+                    //AVERAGE LAP TIME CALCULATIONS
+                    double sum = 0.0;
+                    for (int i = 0; i < targetLaps; i++) {
+                        sum += lapTimes[i];
+                    }
+                    sum /= targetLaps;
+                    sum /= 1000.0;
+
+                    //CALCULATE AND SEND THE AVERAGE TIME IN THE PATH
+
+                    double percentInPathTime = (timeInsidePath / (timeInsidePath + timeOutsidePath) * 100);
+
+                    //SEND THE CORRESPONDING VARS NEEDED TO SHOW IN FINAL LAYOUT
+                    Bundle b = new Bundle();
+                    b.putInt("wallHits", wallHits);
+                    b.putDouble("averageLapTime", sum);
+                    b.putDouble("percentInPathTime", percentInPathTime);
+                    b.putInt("targetLaps", targetLaps);
+
+                    Context c = getContext();
+                    Intent i = new Intent(c, Results.class);
+                    i.putExtras(b);
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    c.startActivity(i);
+                }
+            }
+            hasLapOneStarted = true;
+            startLapTime = System.currentTimeMillis();
+        } else if (yBallCenter < (height / 2) && lapFlag) {
+            lapFlag = false;
+        }
     }
 
     protected void onDraw(Canvas canvas)
     {
-        //FINISH SQUARE STUFF
-        finishLineRadius = width < height ? 0.40f * width : 0.40f * height;
-        finishLine.left = xCenter - radiusOuter; //6
-        //finishLine.left = 100;
-        finishLine.top = yCenter - radiusOuter;
-        finishLine.right = xCenter - radiusInner; //6
-        //finishLine.right = 100;
-        finishLine.bottom = yCenter - radiusInner;
-
         // draw the paths
         if (pathType == PATH_TYPE_SQUARE)
         {
             // draw fills
             canvas.drawRect(outerRectangle, fillPaint);
             canvas.drawRect(innerRectangle, backgroundPaint);
-
-            //DRAW FINISH LINE
-            canvas.drawRect(finishLine, linePaint);       //DRAW FINISH SQUARE
-            canvas.drawRect(finishLine, finishLinePaint);
-
 
             // draw lines
             canvas.drawRect(outerRectangle, linePaint);
@@ -352,28 +477,36 @@ public class RollingBallPanel extends View
             canvas.drawOval(innerRectangle, linePaint);
         }
 
+        //DRAW THE EXTRA UI CIRCLE WHICH INITIATES THE RACE
+        canvas.drawOval(startOval, ballStartingPositionPaint);
+
+        //FINISH LINE
+        finishLineLeftX = outerRectangle.left;
+        finishLineLeftY = height / 2;
+        finishLineRightX = innerRectangle.left;
+        finishLineRightY = height / 2;
+        canvas.drawLine(finishLineLeftX, finishLineLeftY, finishLineRightX, finishLineRightY, finishLinePaint);
+
+        //DIRECTION ARROW
+        canvas.drawLine(outerRectangle.left - 30, (height / 2) - 100, outerRectangle.left - 30, (height / 2) + 100, finishLinePaint);    //line down
+        canvas.drawLine(outerRectangle.left - 50, (height / 2) + 80, outerRectangle.left - 30, (height / 2) + 100, finishLinePaint);     //backslash
+        canvas.drawLine(outerRectangle.left - 10, (height / 2) + 80, outerRectangle.left - 30, (height / 2) + 100, finishLinePaint);     //forward slash
+
         // draw label
-        canvas.drawText("Demo_TiltBall", 6f, labelTextSize, labelPaint);
+        canvas.drawText("Demo_TiltBall_Sachink1", 6f, labelTextSize, labelPaint);
 
         // draw stats (pitch, roll, tilt angle, tilt magnitude)
         if (pathType == PATH_TYPE_SQUARE || pathType == PATH_TYPE_CIRCLE)
         {
+            canvas.drawText("Lap time = " + lapTime, 6f, updateY[7], statsPaint);
+            canvas.drawText("Laps = " + laps + "/" + targetLaps, 6f, updateY[6], statsPaint);
             canvas.drawText("Wall hits = " + wallHits, 6f, updateY[5], statsPaint);
             canvas.drawText("-----------------", 6f, updateY[4], statsPaint);
         }
-        canvas.drawText(String.format(Locale.CANADA, "Tablet pitch (degrees) = %.2f", pitch), 6f, updateY[3],
-                statsPaint);
-        canvas.drawText(String.format(Locale.CANADA, "Tablet roll (degrees) = %.2f", roll), 6f, updateY[2], statsPaint);
-        canvas.drawText(String.format(Locale.CANADA, "Ball x = %.2f", xBallCenter), 6f, updateY[1], statsPaint);
-        canvas.drawText(String.format(Locale.CANADA, "Ball y = %.2f", yBallCenter), 6f, updateY[0], statsPaint);
-        //canvas.drawText(String.format(Locale.CANADA, "Laps: ", lapNumber), 100f, updateY[4],
-                //statsPaint);
-        //canvas.drawText("lap " + currentLapNumber + "/" + lapNumber, 100f, updateY[4], statsPaint);
-        if (currentLapNumber != lapNumber){          //DRAWS LAP IN THIS FORMAT "Lap 1/3"
-            canvas.drawText("Lap " + currentLapNumber + "/" + lapNumber, 100f, updateY[4], statsPaint);
-        } else {
-            canvas.drawText("Lap " + lapNumber, 100f, updateY[4], statsPaint);   //IF PLAYER SELECTS 1 LAP WILL DISPLAY LIKE SO "Lap 1"
-        }
+        canvas.drawText(String.format("Tablet pitch (degrees) = %.2f", pitch), 6f, updateY[3], statsPaint);
+        canvas.drawText(String.format("Tablet roll (degrees) = %.2f", roll), 6f, updateY[2], statsPaint);
+        canvas.drawText(String.format("Ball x = %.2f", xBallCenter), 6f, updateY[1], statsPaint);
+        canvas.drawText(String.format("Ball y = %.2f", yBallCenter), 6f, updateY[0], statsPaint);
 
         // draw the ball in its new location
         canvas.drawBitmap(ball, xBall, yBall, null);
@@ -383,7 +516,7 @@ public class RollingBallPanel extends View
     /*
      * Configure the rolling ball panel according to setup parameters
      */
-    public void configure(String pathMode, String pathWidthArg, int gainArg, String orderOfControlArg, int lapNumberArg) //MUST ADD THIS TO CONFIGURE
+    public void configure(String pathMode, String pathWidthArg, int gainArg, String orderOfControlArg, int lapNumberArg)
     {
         // square vs. circle
         if (pathMode.equals("Square"))
@@ -401,9 +534,9 @@ public class RollingBallPanel extends View
         else
             pathWidth = PATH_WIDTH_MEDIUM;
 
+        targetLaps = lapNumberArg;
         gain = gainArg;
         orderOfControl = orderOfControlArg;
-        lapNumber = lapNumberArg;             //GET LAP NUMBER FROM ACTIVITY
     }
 
     // returns true if the ball is touching (i.e., overlapping) the line of the inner or outer path border
@@ -411,20 +544,16 @@ public class RollingBallPanel extends View
     {
         if (pathType == PATH_TYPE_SQUARE)
         {
-//            Log.i(MYDEBUG, "MyClass.getView() — get item number " + lapNumber);
             ballNow.left = xBall;
             ballNow.top = yBall;
             ballNow.right = xBall + ballDiameter;
             ballNow.bottom = yBall + ballDiameter;
 
-            if (!RectF.intersects(ballNow, outerRectangle) && RectF.intersects(ballNow, outerShadowRectangle))   /*MESSED AROUND WITH COLLISION TO ONLY
-                                                                                                                  TRY AND DETECT WHILE IN PATH, ONLY WORKS FOR INNER*/
-                return false; // touching outside rectangular border
+            if (RectF.intersects(ballNow, outerRectangle) && !RectF.intersects(ballNow, outerShadowRectangle))
+                return true; // touching outside rectangular border
 
-
-            if (RectF.intersects(ballNow, innerRectangle) && RectF.intersects(ballNow, innerShadowRectangle))
+            if (RectF.intersects(ballNow, innerRectangle) && !RectF.intersects(ballNow, innerShadowRectangle))
                 return true; // touching inside rectangular border
-
 
         } else if (pathType == PATH_TYPE_CIRCLE)
         {
@@ -440,15 +569,71 @@ public class RollingBallPanel extends View
         return false;
     }
 
-    public boolean ballTouchingFinish(){           //DEALS WITH THE BALL INTERSECTING WITH THE FINISH SQUARE (TOP LEFT CORNER)
-        if (pathType == PATH_TYPE_SQUARE){
-            //Log.i(MYDEBUG, "MyClass.getView() — get item number " + lapNumber);
+    //RETURNS TRUE IF THE BALL HAS CROSSED THE FINISH LINE AND IF ITS IN THE PATH TOO
+    public boolean finishLineCrossed() {
+        ballNow.left = xBall;
+        ballNow.top = yBall;
+        ballNow.right = xBall + ballDiameter;
+        ballNow.bottom = yBall + ballDiameter;
+
+        if (yBallCenter > (height / 2)) {
+
+            //CHECKS TO SEE IF THE BALL IS IN THE PATH
+            if (isCheating && ballNow.intersects(finishLineLeftX, finishLineLeftY, finishLineRightX, finishLineRightY)) {
+                isCheating = false;
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
+    //ANOTHER ANTI CHEAT METHOD, PLAYER MUST BE HALF WAY DONE BEFORE BEING ABLE TO REGISTER THE LAP
+    public boolean ballCrossedHalfWayPoint() {
+        if (yBallCenter < (height / 2)) {
+
+            if (ballNow.intersects(xCenter, finishLineLeftY, width, finishLineRightY)) {
+                return true;
+            } else
+                return false;
+        } else
+            return false;
+    }
+
+    //BOUNDARY CHECK FOR BOTH THE RECTANGLE AND CIRCULAR PATH
+    public boolean isBallWithinBoundaries() {
+        if (pathType == PATH_TYPE_SQUARE) {
             ballNow.left = xBall;
             ballNow.top = yBall;
             ballNow.right = xBall + ballDiameter;
             ballNow.bottom = yBall + ballDiameter;
-            if(RectF.intersects(ballNow, finishLine))
+
+            if (RectF.intersects(ballNow, detectionOuterRect) && !RectF.intersects(ballNow, detectionInnerRect)) {
                 return true;
+            }
+        }
+        else if (pathType == PATH_TYPE_CIRCLE) {
+            final float ballDistance = (float)Math.sqrt((xBallCenter - xCenter) * (xBallCenter - xCenter)
+                    + (yBallCenter - yCenter) * (yBallCenter - yCenter));
+
+
+            if (Math.abs(ballDistance) < (radiusOuter) && Math.abs(ballDistance) > (radiusInner))
+                return true;
+        }
+        return false;
+    }
+
+    //CHECKS IF THE BALL IS IN THE STARTING CIRCLE
+    public boolean checkIfBallWithinCircle() {
+        float centreX = width - 175;
+        float centreY = 175;
+        final float distanceOfBall = (float)Math.sqrt((xBallCenter - centreX) * (xBallCenter - centreX)
+                + (yBallCenter - centreY) * (yBallCenter - centreY));
+
+        if (Math.abs(distanceOfBall) < 125) {
+            return true;
         }
         return false;
     }

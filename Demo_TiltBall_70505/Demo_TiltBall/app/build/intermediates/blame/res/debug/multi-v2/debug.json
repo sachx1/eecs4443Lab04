@@ -6,11 +6,9 @@
                 {
                     "source": "C:\\Users\\sachx\\Documents\\eecs4443Lab04\\Demo_TiltBall_70505\\Demo_TiltBall\\app\\src\\main\\res\\values\\ic_launcher_background.xml",
                     "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "57",
-                        "endColumns": "56",
-                        "endOffsets": "109"
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
                     },
                     "to": {
                         "startLines": "2",
@@ -23,18 +21,18 @@
                 {
                     "source": "C:\\Users\\sachx\\Documents\\eecs4443Lab04\\Demo_TiltBall_70505\\Demo_TiltBall\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
-                        "startLines": "3,10,11,9,6,5,8,7,4",
-                        "startColumns": "4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "56,479,523,429,253,179,368,305,113",
-                        "endColumns": "56,43,45,49,51,73,60,62,65",
-                        "endOffsets": "108,518,564,474,300,248,424,363,174"
+                        "startLines": "3,-1,-1,12,-1,9,-1,-1,-1,13,-1",
+                        "startColumns": "4,-1,-1,4,-1,4,-1,-1,-1,4,-1",
+                        "startOffsets": "56,-1,-1,578,-1,423,-1,-1,-1,625,-1",
+                        "endColumns": "50,-1,-1,46,-1,64,-1,-1,-1,52,-1",
+                        "endOffsets": "102,-1,-1,620,-1,483,-1,-1,-1,673,-1"
                     },
                     "to": {
-                        "startLines": "3,4,5,6,7,8,9,10,11",
-                        "startColumns": "4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "112,169,213,259,309,361,435,496,559",
-                        "endColumns": "56,43,45,49,51,73,60,62,65",
-                        "endOffsets": "164,208,254,304,356,430,491,554,620"
+                        "startLines": "3,4,5,6,7,8,9,10,11,12,13",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "112,163,207,253,300,352,417,491,552,615,668",
+                        "endColumns": "50,43,45,46,51,64,73,60,62,52,65",
+                        "endOffsets": "158,202,248,295,347,412,486,547,610,663,729"
                     }
                 }
             ]
