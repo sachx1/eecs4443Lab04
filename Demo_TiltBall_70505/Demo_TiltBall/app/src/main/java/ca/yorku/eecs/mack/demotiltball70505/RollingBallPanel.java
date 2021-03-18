@@ -1,6 +1,5 @@
 package ca.yorku.eecs.mack.demotiltball70505;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,12 +13,7 @@ import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-
-import java.util.Locale;
 
 public class RollingBallPanel extends View
 {
@@ -36,16 +30,20 @@ public class RollingBallPanel extends View
     final static int MODE_NONE = 0;
     final static int PATH_TYPE_SQUARE = 1;
     final static int PATH_TYPE_CIRCLE = 2;
+    final static int COLOR_TYPE_BLUE = 1;
+    final static int COLOR_TYPE_GREEN = 2;
 
     final static float PATH_WIDTH_NARROW = 2f; // ... x ball diameter
     final static float PATH_WIDTH_MEDIUM = 4f; // ... x ball diameter
     final static float PATH_WIDTH_WIDE = 8f; // ... x ball diameter
 
     int pathType;
+    int colors; //PATH COLORS
     float radiusOuter, radiusInner;
 
     Bitmap ball, decodedBallBitmap;
     int ballDiameter;
+    String colorOfPath;
 
     float dT; // time since last sensor event (seconds)
 
@@ -91,7 +89,7 @@ public class RollingBallPanel extends View
     float xCenter, yCenter; // the center of the screen
     long now, lastT;
     /*FINISH LINE AND STARTING CIRCLE PAINT VARIABLES*/
-    Paint statsPaint, labelPaint, linePaint, fillPaint, backgroundPaint, finishLinePaint, ballStartingPositionPaint;
+    Paint statsPaint, labelPaint, linePaint, fillPaint, backgroundPaint, finishLinePaint, ballStartingPositionPaint, pathColor;
     float[] updateY;
 
     public RollingBallPanel(Context contextArg)
@@ -122,7 +120,6 @@ public class RollingBallPanel extends View
         finishLinePaint.setStrokeWidth(8);
         finishLinePaint.setAntiAlias(true);
 
-        /*EXTRA UI FEATURE, ADDS A CHECKPOINT BALL TO START THE RACE*/
         ballStartingPositionPaint = new Paint();
         ballStartingPositionPaint.setColor(Color.GREEN);
         ballStartingPositionPaint.setStyle(Paint.Style.FILL);
@@ -134,10 +131,10 @@ public class RollingBallPanel extends View
         linePaint.setAntiAlias(true);
 
         fillPaint = new Paint();
-        fillPaint.setColor(0xffccbbbb);
-        fillPaint.setStyle(Paint.Style.FILL);
+        fillPaint.setColor(Color.BLACK);
+        fillPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        /*COLOR TO MAKE EXTRA UI FEATURE DISAPPEAR*/
+
         backgroundPaint = new Paint();
         backgroundPaint.setColor(Color.LTGRAY);
         backgroundPaint.setStyle(Paint.Style.FILL);
@@ -147,6 +144,20 @@ public class RollingBallPanel extends View
         labelPaint.setColor(Color.BLACK);
         labelPaint.setTextSize(DEFAULT_LABEL_TEXT_SIZE);
         labelPaint.setAntiAlias(true);
+
+        if (colors == 1){
+            fillPaint = new Paint();
+            fillPaint.setColor(Color.BLUE);
+            fillPaint.setStyle(Paint.Style.FILL);
+        } else if (colors == COLOR_TYPE_GREEN){
+            pathColor = new Paint();
+            pathColor.setColor(Color.GREEN);
+            pathColor.setStyle(Paint.Style.FILL);
+        } else {
+            pathColor = new Paint();
+            pathColor.setColor(Color.GREEN);
+            pathColor.setStyle(Paint.Style.FILL);
+        }
 
         statsPaint = new Paint();
         statsPaint.setAntiAlias(true);
@@ -337,39 +348,20 @@ public class RollingBallPanel extends View
         xBallCenter = xBall + ballDiameter / 2f;
         yBallCenter = yBall + ballDiameter / 2f;
 
-        /*CHECKS TO SEE IF THE RACE HAS STARTED AND IF THE USER HAS USED THE CIRCLE TRIGGER
-         * IF THE USER HAS STOOD IN THE CIRCLE FOR MORE THAN 1 SECOND THEN THIS MAKES THE OVAL DISAPPEAR
-         * AND STARTS THE RACE, RACE TIMER AND A BEEP TO MARK THIS */
-        if (!startRace && startInsideOvalDisplayTime >= 1000) {
-            ballStartingPositionPaint.setColor(Color.LTGRAY);
+        /*CHECKS TO SEE IF THE RACE HAS STARTED,  */
+        if (!startRace ) {
             invalidate();
             startRace = true;
             toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 500);
         }
 
-        /*CHECKS TO SEE IF THE RACE HAS NOT STARTED AND IF INSIDE CIRCLE IS TRUE
-         * IF THESE ARE SATISIFIED, IT CHECKS TO SEE IF THE TIMER IS NOT == TO 0,
-         * IF THIS IS TRUE THEN ADD TO THE CURRENT TIME - THE ORIGINAL START CIRCLE TIME*/
-        if (!startRace && checkIfBallWithinCircle()) {
-            if (startOvalDisplayTime != 0) {
-                startInsideOvalDisplayTime += System.currentTimeMillis() - startOvalDisplayTime;
-                startOvalDisplayTime = System.currentTimeMillis();
-            }
-            else {
-                startOvalDisplayTime = System.currentTimeMillis();
-            }
-        }
-        else if (!startRace && !checkIfBallWithinCircle()){
-            startInsideOvalDisplayTime = 0.0;
-            startOvalDisplayTime = 0.0;
-        }
         else {
-            updateBallStats();
+            timeAndBoundary();
         }
         invalidate(); // force onDraw to redraw the screen with the ball in its new position
     }
 
-    public void updateBallStats() {
+    public void timeAndBoundary() {
         if (ballTouchingLine() && !isBallWithinBoundaries()) {
             touchFlag = true;                               //we only want a vibrate when the ball goes from inside to outside
         }
@@ -460,7 +452,7 @@ public class RollingBallPanel extends View
         if (pathType == PATH_TYPE_SQUARE)
         {
             // draw fills
-            canvas.drawRect(outerRectangle, fillPaint);
+            canvas.drawRect(outerRectangle, pathColor);
             canvas.drawRect(innerRectangle, backgroundPaint);
 
             // draw lines
@@ -477,8 +469,6 @@ public class RollingBallPanel extends View
             canvas.drawOval(innerRectangle, linePaint);
         }
 
-        //DRAW THE EXTRA UI CIRCLE WHICH INITIATES THE RACE
-        canvas.drawOval(startOval, ballStartingPositionPaint);
 
         //FINISH LINE
         finishLineLeftX = outerRectangle.left;
@@ -516,7 +506,7 @@ public class RollingBallPanel extends View
     /*
      * Configure the rolling ball panel according to setup parameters
      */
-    public void configure(String pathMode, String pathWidthArg, int gainArg, String orderOfControlArg, int lapNumberArg)
+    public void configure(String pathMode, String pathWidthArg, int gainArg, String orderOfControlArg, int lapNumberArg, String colorPathArg)
     {
         // square vs. circle
         if (pathMode.equals("Square"))
@@ -537,6 +527,14 @@ public class RollingBallPanel extends View
         targetLaps = lapNumberArg;
         gain = gainArg;
         orderOfControl = orderOfControlArg;
+        //colorOfPath = colorPathArg;
+        if (colorPathArg.equals("Blue")){
+            colors = COLOR_TYPE_BLUE;
+        } else if (colorPathArg.equals("Green")){
+            colors = COLOR_TYPE_GREEN;
+        } else {
+            colors = 3;
+        }
     }
 
     // returns true if the ball is touching (i.e., overlapping) the line of the inner or outer path border
@@ -625,17 +623,5 @@ public class RollingBallPanel extends View
         return false;
     }
 
-    //CHECKS IF THE BALL IS IN THE STARTING CIRCLE
-    public boolean checkIfBallWithinCircle() {
-        float centreX = width - 175;
-        float centreY = 175;
-        final float distanceOfBall = (float)Math.sqrt((xBallCenter - centreX) * (xBallCenter - centreX)
-                + (yBallCenter - centreY) * (yBallCenter - centreY));
-
-        if (Math.abs(distanceOfBall) < 125) {
-            return true;
-        }
-        return false;
-    }
 
 }

@@ -48,6 +48,11 @@ public class Results extends Activity {
         this.finish(); // terminate
         //System.exit(0);
     }
+
+    public void replay(View view){
+        setContentView(R.layout.main);
+
+    }
 //
 //    public void passThrough(int curLapArg, int wallHitsArg){
 //

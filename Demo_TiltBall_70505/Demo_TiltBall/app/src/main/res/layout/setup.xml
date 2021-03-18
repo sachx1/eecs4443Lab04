@@ -119,6 +119,27 @@
                     android:gravity="left"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
             </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:id="@+id/colorPath"
+                    android:gravity="right"
+                    android:paddingRight="5dp"
+                    android:text="@string/colorName"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+                <!--android:layout_width="wrap_content"
+                android:layout_height="wrap_content"-->
+
+
+                <Spinner
+                    android:id="@+id/paramColor"
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
         </TableLayout>
 
         <LinearLayout

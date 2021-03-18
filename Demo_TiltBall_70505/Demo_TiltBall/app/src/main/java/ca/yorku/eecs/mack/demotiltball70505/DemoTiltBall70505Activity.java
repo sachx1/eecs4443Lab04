@@ -62,6 +62,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
     ScreenRefreshTimer refreshScreen;
     private SensorManager sm;
     private Sensor sA, sM, sO;
+    String colorPath;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -76,6 +77,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
         pathType = b.getString("pathType");
         pathWidth = b.getString("pathWidth");
         numberLaps = b.getInt("laps");
+        colorPath = b.getString("color");
 
 
         // set alpha for low-pass filter (based on sampling rate and order of control)
@@ -96,7 +98,7 @@ public class DemoTiltBall70505Activity extends Activity implements SensorEventLi
 
         // configure rolling ball panel, as per setup parameters
         rb = (RollingBallPanel)findViewById(R.id.rollingballpanel);
-        rb.configure(pathType, pathWidth, gain, orderOfControl, numberLaps);
+        rb.configure(pathType, pathWidth, gain, orderOfControl, numberLaps, colorPath);
 
         // get sensors
         sm = (SensorManager)getSystemService(SENSOR_SERVICE);

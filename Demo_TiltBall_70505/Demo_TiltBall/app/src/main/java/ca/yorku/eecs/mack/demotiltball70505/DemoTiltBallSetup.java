@@ -13,6 +13,8 @@ public class DemoTiltBallSetup extends Activity
 	final static String[] GAIN = { "Very low", "Low", "Medium", "High", "Very high" };
 	final static String[] PATH_TYPE = { "Square", "Circle", "Free" };
 	final static String[] PATH_WIDTH = { "Narrow", "Medium", "Wide" };
+	//COLOR FOR PATHS
+	final static String[] COLOR_PATH = {"Blue", "Green"};
 	//LAP ARRAY FOR SPINNER, GOES FROM 1-5
 	final static Integer[] NUMBER_OF_LAPS = new Integer[]{ 1, 2, 3, 4, 5 };
 
@@ -20,7 +22,7 @@ public class DemoTiltBallSetup extends Activity
 	final static int[] GAIN_ARG_POSITION_CONTROL = { 5, 10, 20, 40, 80 };
 	final static int[] GAIN_ARG_VELOCITY_CONTROL = { 25, 50, 100, 200, 400 };
 
-	Spinner spinOrderOfControl, spinGain, spinPathMode, spinPathWidth, spinnerLaps;
+	Spinner spinOrderOfControl, spinGain, spinPathMode, spinPathWidth, spinnerLaps, spinnerColor;
 
 	// called when the activity is first created
 	@Override
@@ -52,7 +54,12 @@ public class DemoTiltBallSetup extends Activity
 		spinnerLaps = (Spinner) findViewById(R.id.paramNumLaps);
 		ArrayAdapter<Integer> adapter5 = new ArrayAdapter<Integer>(this, R.layout.spinnerstyle, NUMBER_OF_LAPS);
 		spinnerLaps.setAdapter(adapter5);
-		spinnerLaps.setSelection(0); // 1
+		spinnerLaps.setSelection(0);
+
+		spinnerColor = (Spinner) findViewById(R.id.paramColor);
+		ArrayAdapter<CharSequence> adapter6 = new ArrayAdapter<CharSequence>(this, R.layout.spinnerstyle, COLOR_PATH);
+		spinnerColor.setAdapter(adapter6);
+		spinnerColor.setSelection(0); //BLUE
 	}
 
 	// called when the "OK" button is tapped
@@ -60,6 +67,7 @@ public class DemoTiltBallSetup extends Activity
 	{
 		// get user's choices...
 		String orderOfControl = (String) spinOrderOfControl.getSelectedItem();
+
 
 		// actual gain value depends on order of control
 		int gain;
@@ -71,6 +79,7 @@ public class DemoTiltBallSetup extends Activity
 
 		String pathType = PATH_TYPE[spinPathMode.getSelectedItemPosition()];
 		String pathWidth = PATH_WIDTH[spinPathWidth.getSelectedItemPosition()];
+		String color = COLOR_PATH[spinnerColor.getSelectedItemPosition()];
 
 		// bundle up parameters to pass on to activity
 		Bundle b = new Bundle();
@@ -78,6 +87,7 @@ public class DemoTiltBallSetup extends Activity
 		b.putInt("gain", gain);
 		b.putString("pathType", pathType);
 		b.putString("pathWidth", pathWidth);
+		b.putString("color", color);;
 		//SENDS THE LAP SELECTION TO MAIN ACTIVITY
 		b.putInt("laps", laps);
 
